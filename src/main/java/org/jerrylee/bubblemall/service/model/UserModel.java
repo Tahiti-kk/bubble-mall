@@ -4,20 +4,20 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * @author JerryLee
  * @date 2020/4/23
  */
-public class UserModel {
-    @NotBlank(message = "密码不能为空")
+public class UserModel implements Serializable {
 
     private Integer id;
     @NotBlank(message = "请填写用户名")
     private String name;
-    @NotBlank(message = "请填写性别")
+    @NotNull(message = "请填写性别")
     private Byte gender;
-    @NotBlank(message = "请填写年龄")
+    @NotNull(message = "请填写年龄")
     @Min(value = 0,message = "年龄必须大于0岁")
     @Max(value = 150,message = "年龄必须小于150岁")
     private Integer age;

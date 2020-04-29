@@ -1,6 +1,9 @@
 package org.jerrylee.bubblemall.controller;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.jerrylee.bubblemall.controller.viewobject.ItemVO;
 import org.jerrylee.bubblemall.error.BusinessException;
 import org.jerrylee.bubblemall.response.CommonReturnType;
@@ -16,15 +19,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.jerrylee.bubblemall.controller.BaseController.CONTENT_TYPE_FORMED;
-
 /**
  * @author JerryLee
  * @date 2020/4/28
  */
 @Controller("/item")
 @RequestMapping("/item")
-@CrossOrigin(origins = {"*"},allowCredentials = "true")
 @Api(tags = "ItemController | 商品接口")
 public class ItemController {
 
@@ -32,8 +32,16 @@ public class ItemController {
     private ItemService itemService;
 
     // 创建商品的controller
-    @RequestMapping(value = "/create",method = {RequestMethod.POST},consumes={CONTENT_TYPE_FORMED})
+    @RequestMapping(value = "/create", method = {RequestMethod.POST})
     @ResponseBody
+    @ApiOperation(value = "创建商品", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "title", value = "商品标签", dataType = "String", required = true),
+            @ApiImplicitParam(name = "description", value = "商品简介", dataType = "String", required = true),
+            @ApiImplicitParam(name = "price", value = "商品价格", dataType = "BigDecimal", required = true),
+            @ApiImplicitParam(name = "stock", value = "商品库存", dataType = "int", required = true),
+            @ApiImplicitParam(name = "imgUrl", value = "商品图片", dataType = "String", required = true)
+    })
     public CommonReturnType createItem(@RequestParam(name = "title")String title,
                                        @RequestParam(name = "description")String description,
                                        @RequestParam(name = "price") BigDecimal price,
@@ -53,9 +61,13 @@ public class ItemController {
         return CommonReturnType.create(itemVO);
     }
 
-    //商品详情页浏览
-    @RequestMapping(value = "/get",method = {RequestMethod.GET})
+    // 商品详情页浏览
+    @RequestMapping(value = "/get", method = {RequestMethod.GET})
     @ResponseBody
+    @ApiOperation(value = "获得商品", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "商品id", dataType = "int", required = true)
+    })
     public CommonReturnType getItem(@RequestParam(name = "id")Integer id){
         ItemModel itemModel = itemService.getItemById(id);
 
@@ -66,8 +78,9 @@ public class ItemController {
     }
 
     //商品列表页面浏览
-    @RequestMapping(value = "/list",method = {RequestMethod.GET})
+    @RequestMapping(value = "/list", method = {RequestMethod.GET})
     @ResponseBody
+    @ApiOperation(value = "获得商品列表", httpMethod = "GET")
     public CommonReturnType listItem(){
         List<ItemModel> itemModelList = itemService.listItem();
 

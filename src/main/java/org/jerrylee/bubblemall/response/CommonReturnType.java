@@ -1,6 +1,7 @@
 package org.jerrylee.bubblemall.response;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import javafx.beans.binding.ObjectExpression;
 
 /**
@@ -14,12 +15,14 @@ public class CommonReturnType {
      * 对应请求的返回处理结果
      * "success" or "fail"
      */
+    @ApiModelProperty(name = "status", value = "处理状态：\"success\" or \"fail\"")
     private String status;
 
     /**
      * success时data为json数据
      * fail时data为通用的错误码
      */
+    @ApiModelProperty(name = "data", value = "返回数据：success时为json数据，fail时为错误码")
     private Object data;
 
     public static CommonReturnType create(Object result) {

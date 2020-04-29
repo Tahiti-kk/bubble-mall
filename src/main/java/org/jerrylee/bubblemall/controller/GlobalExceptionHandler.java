@@ -3,10 +3,9 @@ package org.jerrylee.bubblemall.controller;
 import org.jerrylee.bubblemall.error.BusinessException;
 import org.jerrylee.bubblemall.error.EmBusinessError;
 import org.jerrylee.bubblemall.response.CommonReturnType;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -14,19 +13,15 @@ import java.util.Map;
 
 /**
  * @author JerryLee
- * @date 2020/4/24
+ * @date 2020/4/29
+ * 统一处理Controller层抛出的异常
  */
-public class BaseController {
-
-    public static final String CONTENT_TYPE_FORMED="application/x-www-form-urlencoded";
-
-    /**
-     * 统一处理controller层不能处理而抛出的exception
-     */
-    @ExceptionHandler({Exception.class})
-    @ResponseStatus(HttpStatus.OK)
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(Exception.class)
     @ResponseBody
     public CommonReturnType handlerException(HttpServletRequest request, Exception ex) {
+        ex.printStackTrace();
         Map<String,Object> responseData = new HashMap<>();
         if( ex instanceof BusinessException){
             BusinessException businessException = (BusinessException)ex;

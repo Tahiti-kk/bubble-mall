@@ -10,6 +10,7 @@ import org.jerrylee.bubblemall.service.UserService;
 import org.jerrylee.bubblemall.service.model.UserModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author JerryLee
@@ -30,15 +33,17 @@ import java.util.Random;
  */
 @Controller("user")
 @RequestMapping("/user")
-@CrossOrigin(allowCredentials="true", allowedHeaders = "*")
 @Api(tags = "UserController | 用户接口")
-public class UserController extends BaseController {
+public class UserController {
 
     @Autowired
     private UserService userService;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @RequestMapping("/get")
     @ResponseBody
@@ -66,7 +71,7 @@ public class UserController extends BaseController {
     /**
      * 用户获取otp短信接口
      */
-    @RequestMapping(value = "/getotp", method = {RequestMethod.POST}, consumes={CONTENT_TYPE_FORMED})
+    @RequestMapping(value = "/getotp", method = {RequestMethod.POST})
     @ResponseBody
     @ApiOperation(value = "根据手机号获得验证码", httpMethod = "POST")
     @ApiImplicitParams({
@@ -80,7 +85,9 @@ public class UserController extends BaseController {
         String otpCode = String.valueOf(randomInt);
 
         // 将OTP验证码同对应用户的手机号关联，使用httpsession的方式绑定手机号与OTPCODE
-        httpServletRequest.getSession().setAttribute(telephone,otpCode);
+        // httpServletRequest.getSession().setAttribute(telephone,otpCode);
+        redisTemplate.opsForValue().set(telephone, otpCode);
+        redisTemplate.expire(telephone, 5, TimeUnit.MINUTES);
 
         // 将OTP验证码通过短信通道发送给用户,此处省略
         System.out.println("telephone = " + telephone + " & otpCode = "+otpCode);
@@ -91,7 +98,7 @@ public class UserController extends BaseController {
     /**
      * 用户注册接口
      */
-    @RequestMapping(value = "/register", method = {RequestMethod.POST},consumes={CONTENT_TYPE_FORMED})
+    @RequestMapping(value = "/register", method = {RequestMethod.POST})
     @ResponseBody
     @ApiOperation(value = "用户注册", httpMethod = "POST")
     @ApiImplicitParams({
@@ -109,8 +116,9 @@ public class UserController extends BaseController {
                                      @RequestParam(name="age")Integer age,
                                      @RequestParam(name="password")String password) throws BusinessException, NoSuchAlgorithmException {
         // 验证手机号和对应的otpcode相符合
-        String inSessionOtpCode = (String) this.httpServletRequest.getSession().getAttribute(telephone);
-        if(!com.alibaba.druid.util.StringUtils.equals(otpCode,inSessionOtpCode)){
+        // String inSessionOtpCode = (String) this.httpServletRequest.getSession().getAttribute(telephone);
+        String inRedisOtpCode = (String) redisTemplate.opsForValue().get(telephone);
+        if(!com.alibaba.druid.util.StringUtils.equals(otpCode,inRedisOtpCode)){
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,"验证码错误");
         }
         //用户的注册流程
@@ -128,7 +136,7 @@ public class UserController extends BaseController {
     /**
      * 用户登陆接口
      */
-    @RequestMapping(value = "/login",method = {RequestMethod.POST},consumes={CONTENT_TYPE_FORMED})
+    @RequestMapping(value = "/login",method = {RequestMethod.POST})
     @ResponseBody
     @ApiOperation(value = "用户登录", httpMethod = "POST")
     @ApiImplicitParams({
@@ -146,11 +154,14 @@ public class UserController extends BaseController {
         // 用户登陆服务,用来校验用户登陆是否合法
         UserModel userModel = userService.validateLogin(telephone, encodeByMd5(password));
 
-        // 将登陆凭证加入到用户登陆成功的session内
-        this.httpServletRequest.getSession().setAttribute("IS_LOGIN",true);
-        this.httpServletRequest.getSession().setAttribute("LOGIN_USER",userModel);
+        // 生成token
+        String uuidToken = UUID.randomUUID().toString().replace("-", "");
 
-        return CommonReturnType.create(null);
+        // 建立token和用户登陆态之间的联系
+        redisTemplate.opsForValue().set(uuidToken, userModel);
+        redisTemplate.expire(uuidToken, 1, TimeUnit.HOURS);
+
+        return CommonReturnType.create(uuidToken);
     }
 
     /**

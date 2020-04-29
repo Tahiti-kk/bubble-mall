@@ -1,6 +1,9 @@
 package org.jerrylee.bubblemall.error;
 
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author JerryLee
  * @date 2020/4/23

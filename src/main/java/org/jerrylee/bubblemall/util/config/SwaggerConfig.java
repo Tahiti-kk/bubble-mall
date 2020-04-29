@@ -11,6 +11,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -38,25 +39,8 @@ public class SwaggerConfig {
     private ApiInfo webApiInfo() {
         return new ApiInfoBuilder()
                 .title("API Documentation for Bubble Mall")
-                .version("1.0")
-                .build();
-    }
-
-
-
-    @Bean
-    public Docket adminApiConfig(){
-        return  new Docket(DocumentationType.SWAGGER_2)
-                .groupName("内部接口")
-                .apiInfo(adminApiInfo())
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("org.jerrylee.bubblemall.controller"))
-                .build();
-    }
-
-    private ApiInfo adminApiInfo() {
-        return new ApiInfoBuilder()
-                .title("API Documentation for Bubble Mall")
+                .description("API-Doc")
+                .contact(new Contact("Jerry Lee", "https://github.com/Tahiti-kk", "jyleewhu@gmail.com"))
                 .version("1.0")
                 .build();
     }
