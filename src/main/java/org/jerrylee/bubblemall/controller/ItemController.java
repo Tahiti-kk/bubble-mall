@@ -92,8 +92,6 @@ public class ItemController {
         return CommonReturnType.create(itemVOList);
     }
 
-
-
     private ItemVO convertVOFromModel(ItemModel itemModel){
         if(itemModel == null){
             return null;
